@@ -1,0 +1,1595 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Formulario.ia — Documentos legales con IA</title>
+  <meta name="description" content="Generá contratos, cartas y documentos legales en minutos con inteligencia artificial. Gratis para particulares." />
+  <meta property="og:title" content="Formulario.ia — Documentos legales gratis con IA" />
+  <meta property="og:description" content="Generá contratos, cartas y documentos en minutos. Sin registro. Gratis." />
+  <meta name="theme-color" content="#2D6A4F" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet" />
+
+  <!-- jsPDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <style>
+    /* ─── TOKENS ─────────────────────────────────────────────── */
+    :root {
+      --bg:           #F4F5F0;
+      --bg-card:      #FFFFFF;
+      --bg-input:     #FFFFFF;
+      --surface:      #ECEEE8;
+      --border:       #DDE0D8;
+      --border-strong:#BEC3B8;
+
+      --ink:          #1A1D17;
+      --ink-2:        #3D4238;
+      --ink-3:        #6B7066;
+      --ink-muted:    #9BA39A;
+
+      --accent:       #2D6A4F;
+      --accent-light: #52B788;
+      --accent-bg:    #D8F3DC;
+      --accent-hover: #245B42;
+
+      --indigo:       #3D5A99;
+      --indigo-bg:    #EBF0FA;
+
+      --warn-bg:      #FFF8E6;
+      --warn-border:  #F0C040;
+      --warn-ink:     #7A5C00;
+
+      --radius-sm:    6px;
+      --radius:       12px;
+      --radius-lg:    18px;
+      --radius-xl:    24px;
+
+      --shadow-sm:    0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+      --shadow:       0 4px 16px rgba(0,0,0,.08), 0 1px 4px rgba(0,0,0,.04);
+      --shadow-lg:    0 12px 40px rgba(0,0,0,.10), 0 2px 8px rgba(0,0,0,.05);
+
+      --font-display: 'DM Serif Display', Georgia, serif;
+      --font-body:    'DM Sans', system-ui, sans-serif;
+
+      --ease-out:     cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* ─── RESET ──────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; -webkit-text-size-adjust: 100%; }
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--ink);
+      min-height: 100dvh;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    button { cursor: pointer; border: none; background: none; font: inherit; }
+    input, textarea { font: inherit; }
+    a { color: inherit; text-decoration: none; }
+
+    /* ─── LAYOUT SHELL ───────────────────────────────────────── */
+    .app-shell {
+      display: flex;
+      flex-direction: column;
+      min-height: 100dvh;
+    }
+
+    /* ─── VIEWS ──────────────────────────────────────────────── */
+    .view { display: none; flex-direction: column; flex: 1; }
+    .view.active { display: flex; }
+
+    /* ─── HEADER ─────────────────────────────────────────────── */
+    .header {
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      border-bottom: 1px solid transparent;
+      transition: border-color .2s;
+    }
+    .header.scrolled { border-color: var(--border); }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .logo-mark {
+      width: 32px;
+      height: 32px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .logo-mark svg { width: 18px; height: 18px; }
+    .logo-name {
+      font-family: var(--font-display);
+      font-size: 1.2rem;
+      color: var(--ink);
+      letter-spacing: -.01em;
+    }
+    .logo-name span { color: var(--accent); }
+
+    .badge-free {
+      font-size: .7rem;
+      font-weight: 600;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: var(--accent-bg);
+      padding: 3px 8px;
+      border-radius: 20px;
+    }
+
+    /* ─── HOME ───────────────────────────────────────────────── */
+    .home-hero {
+      padding: 28px 20px 20px;
+      text-align: center;
+    }
+    .home-hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(1.7rem, 5vw, 2.4rem);
+      line-height: 1.15;
+      color: var(--ink);
+      margin-bottom: 10px;
+      letter-spacing: -.02em;
+    }
+    .home-hero h1 em {
+      font-style: italic;
+      color: var(--accent);
+    }
+    .home-hero p {
+      font-size: .9rem;
+      color: var(--ink-3);
+      max-width: 320px;
+      margin: 0 auto;
+      line-height: 1.55;
+    }
+
+    .section-label {
+      padding: 0 20px;
+      margin-bottom: 12px;
+      font-size: .72rem;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+    }
+
+    /* ─── DOCUMENT GRID ──────────────────────────────────────── */
+    .doc-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      padding: 0 16px 20px;
+    }
+    @media (min-width: 480px) { .doc-grid { grid-template-columns: 1fr 1fr 1fr; } }
+    @media (min-width: 768px) { .doc-grid { grid-template-columns: repeat(4, 1fr); padding: 0 24px 24px; max-width: 860px; margin: 0 auto; width: 100%; } }
+
+    .doc-card {
+      background: var(--bg-card);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 18px 14px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+      cursor: pointer;
+      transition: border-color .18s, box-shadow .18s, transform .18s var(--ease-out);
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .doc-card:hover {
+      border-color: var(--accent-light);
+      box-shadow: var(--shadow);
+      transform: translateY(-2px);
+    }
+    .doc-card:active { transform: scale(.97); }
+
+    .doc-icon {
+      width: 44px;
+      height: 44px;
+      background: var(--accent-bg);
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      flex-shrink: 0;
+    }
+
+    .doc-info { flex: 1; }
+    .doc-name {
+      font-size: .85rem;
+      font-weight: 600;
+      color: var(--ink);
+      line-height: 1.25;
+      margin-bottom: 4px;
+    }
+    .doc-desc {
+      font-size: .75rem;
+      color: var(--ink-3);
+      line-height: 1.4;
+    }
+
+    /* ─── DISCLAIMER ─────────────────────────────────────────── */
+    .disclaimer {
+      margin: 0 16px 16px;
+      padding: 10px 14px;
+      background: var(--warn-bg);
+      border: 1px solid var(--warn-border);
+      border-radius: var(--radius);
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .disclaimer-icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+    .disclaimer p {
+      font-size: .75rem;
+      color: var(--warn-ink);
+      line-height: 1.45;
+    }
+    .disclaimer strong { font-weight: 600; }
+    @media (min-width: 768px) { .disclaimer { max-width: 812px; margin: 0 auto 20px; width: calc(100% - 48px); } }
+
+    /* ─── CHAT VIEW ──────────────────────────────────────────── */
+    .chat-view {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .chat-header {
+      padding: 14px 16px;
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 5;
+    }
+    .btn-back {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background .15s;
+    }
+    .btn-back:hover { background: var(--border); }
+    .btn-back svg { width: 16px; height: 16px; }
+
+    .chat-header-info { flex: 1; min-width: 0; }
+    .chat-doc-name {
+      font-size: .9rem;
+      font-weight: 600;
+      color: var(--ink);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .chat-step-label {
+      font-size: .72rem;
+      color: var(--ink-3);
+      margin-top: 1px;
+    }
+
+    .progress-bar {
+      height: 3px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-light));
+      border-radius: 2px;
+      transition: width .4s var(--ease-out);
+    }
+
+    /* ─── CHAT BODY ──────────────────────────────────────────── */
+    .chat-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 16px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    @media (min-width: 640px) { .chat-body { max-width: 640px; margin: 0 auto; width: 100%; } }
+
+    /* Current question — big, centered */
+    .question-block {
+      text-align: center;
+      animation: fadeUp .4s var(--ease-out) both;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .question-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--accent-bg);
+      color: var(--accent);
+      font-size: .72rem;
+      font-weight: 600;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 20px;
+      margin-bottom: 14px;
+    }
+
+    .question-text {
+      font-family: var(--font-display);
+      font-size: clamp(1.3rem, 4vw, 1.7rem);
+      line-height: 1.25;
+      color: var(--ink);
+      letter-spacing: -.01em;
+      margin-bottom: 8px;
+    }
+    .question-hint {
+      font-size: .8rem;
+      color: var(--ink-3);
+    }
+
+    /* Answered items */
+    .answered-section {
+      border-top: 1px solid var(--border);
+      padding-top: 20px;
+    }
+    .answered-label {
+      font-size: .7rem;
+      font-weight: 600;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+      margin-bottom: 10px;
+    }
+    .answered-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .answered-item {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      font-size: .82rem;
+      animation: fadeUp .3s var(--ease-out) both;
+    }
+    .answered-key {
+      color: var(--ink-3);
+      flex-shrink: 0;
+      min-width: 0;
+    }
+    .answered-val {
+      color: var(--ink);
+      font-weight: 500;
+    }
+    .answered-check {
+      color: var(--accent-light);
+      flex-shrink: 0;
+      font-size: .9rem;
+    }
+
+    /* Loading dots */
+    .typing-indicator {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+      justify-content: center;
+      padding: 20px 0;
+    }
+    .typing-dot {
+      width: 7px; height: 7px;
+      background: var(--accent-light);
+      border-radius: 50%;
+      animation: bounce .8s infinite;
+    }
+    .typing-dot:nth-child(2) { animation-delay: .15s; }
+    .typing-dot:nth-child(3) { animation-delay: .3s; }
+    @keyframes bounce {
+      0%, 80%, 100% { transform: scale(.6); opacity: .4; }
+      40%            { transform: scale(1);  opacity: 1; }
+    }
+
+    /* ─── CHAT FOOTER ────────────────────────────────────────── */
+    .chat-footer {
+      background: var(--bg-card);
+      border-top: 1px solid var(--border);
+      padding: 12px 16px;
+      padding-bottom: max(12px, env(safe-area-inset-bottom));
+    }
+    @media (min-width: 640px) {
+      .chat-footer > * { max-width: 640px; margin: 0 auto; }
+    }
+
+    .chat-input-row {
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+    }
+    .chat-input {
+      flex: 1;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      font-size: .9rem;
+      color: var(--ink);
+      resize: none;
+      min-height: 46px;
+      max-height: 120px;
+      outline: none;
+      transition: border-color .15s;
+      line-height: 1.4;
+    }
+    .chat-input:focus { border-color: var(--accent); background: var(--bg-card); }
+    .chat-input::placeholder { color: var(--ink-muted); }
+
+    .btn-send {
+      width: 46px;
+      height: 46px;
+      background: var(--accent);
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background .15s, transform .1s;
+    }
+    .btn-send:hover { background: var(--accent-hover); }
+    .btn-send:active { transform: scale(.93); }
+    .btn-send:disabled { background: var(--border); pointer-events: none; }
+    .btn-send svg { width: 18px; height: 18px; }
+
+    .chat-disclaimer {
+      margin-top: 8px;
+      font-size: .68rem;
+      color: var(--ink-muted);
+      text-align: center;
+      line-height: 1.4;
+    }
+
+    /* ─── REMOVED: API KEY OVERLAY (key is now server-side) ─── */
+
+    /* ─── PREVIEW VIEW ───────────────────────────────────────── */
+    .preview-view {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .preview-header {
+      padding: 14px 16px;
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .preview-title {
+      font-size: .9rem;
+      font-weight: 600;
+      flex: 1;
+    }
+
+    .preview-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 16px;
+    }
+    @media (min-width: 640px) { .preview-body { max-width: 700px; margin: 0 auto; width: 100%; } }
+
+    .doc-paper {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px 24px;
+      box-shadow: var(--shadow-sm);
+      font-size: .88rem;
+      line-height: 1.75;
+      color: var(--ink-2);
+      white-space: pre-wrap;
+      font-family: 'Georgia', serif;
+      min-height: 400px;
+    }
+    @media (min-width: 480px) { .doc-paper { padding: 40px 36px; } }
+
+    .preview-footer {
+      background: var(--bg-card);
+      border-top: 1px solid var(--border);
+      padding: 16px;
+      padding-bottom: max(16px, env(safe-area-inset-bottom));
+      display: flex;
+      gap: 10px;
+    }
+    @media (min-width: 640px) {
+      .preview-footer { max-width: 700px; margin: 0 auto; width: 100%; border-top: none; }
+    }
+
+    .btn-download {
+      flex: 1;
+      background: var(--accent);
+      color: white;
+      border-radius: var(--radius);
+      padding: 14px;
+      font-size: .9rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background .15s;
+    }
+    .btn-download:hover { background: var(--accent-hover); }
+    .btn-download svg { width: 18px; height: 18px; }
+
+    .btn-restart {
+      background: var(--surface);
+      color: var(--ink-2);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      font-size: .9rem;
+      font-weight: 500;
+      transition: background .15s;
+    }
+    .btn-restart:hover { background: var(--border); }
+
+    /* ─── GENERATING STATE ───────────────────────────────────── */
+    .generating-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(244,245,240,.9);
+      z-index: 50;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      animation: fadeIn .2s ease;
+    }
+    .generating-overlay.hidden { display: none; }
+    .generating-spinner {
+      width: 48px;
+      height: 48px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .generating-text {
+      font-family: var(--font-display);
+      font-size: 1.2rem;
+      color: var(--ink);
+      text-align: center;
+    }
+    .generating-sub {
+      font-size: .82rem;
+      color: var(--ink-3);
+      text-align: center;
+    }
+
+    /* ─── ERROR TOAST ────────────────────────────────────────── */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #2D2D2D;
+      color: white;
+      padding: 12px 20px;
+      border-radius: var(--radius);
+      font-size: .85rem;
+      z-index: 200;
+      opacity: 0;
+      pointer-events: none;
+      transition: all .3s var(--ease-out);
+      white-space: nowrap;
+      max-width: calc(100vw - 40px);
+      text-align: center;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* Scroll padding for chat */
+    .chat-body { scroll-padding-bottom: 20px; }
+  </style>
+</head>
+<body>
+
+<!-- API KEY: reemplazá YOUR_KEY_HERE con tu clave de Anthropic antes de publicar -->
+
+<!-- ══════════════════════════════════════════════
+     GENERATING OVERLAY
+══════════════════════════════════════════════ -->
+<div class="generating-overlay hidden" id="generatingOverlay">
+  <div class="generating-spinner"></div>
+  <p class="generating-text">Redactando tu documento…</p>
+  <p class="generating-sub">Esto tarda unos segundos</p>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     TOAST
+══════════════════════════════════════════════ -->
+<div class="toast" id="toast"></div>
+
+<!-- ══════════════════════════════════════════════
+     APP SHELL
+══════════════════════════════════════════════ -->
+<div class="app-shell">
+
+  <!-- ─── HEADER (solo en home) ───────────────────────────────── -->
+  <header class="header" id="mainHeader">
+    <div class="logo">
+      <div class="logo-mark">
+        <!-- Document + sparkle SVG -->
+        <svg viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="3" y="2" width="10" height="13" rx="1.5" fill="white" opacity=".25"/>
+          <rect x="3" y="2" width="10" height="13" rx="1.5" stroke="white" stroke-width="1.4"/>
+          <line x1="6" y1="6" x2="10" y2="6" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="6" y1="8.5" x2="10" y2="8.5" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="6" y1="11" x2="8.5" y2="11" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+          <circle cx="14" cy="4" r="2.5" fill="#52B788"/>
+          <path d="M14 2.8v2.4M12.8 4h2.4" stroke="white" stroke-width="1" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <span class="logo-name">Formulario<span>.ia</span></span>
+    </div>
+    <span class="badge-free">Gratis</span>
+  </header>
+
+  <!-- ─── VIEW: HOME ──────────────────────────────────────────── -->
+  <div class="view active" id="viewHome">
+
+    <div class="home-hero">
+      <h1>Documentos legales<br>en <em>minutos</em>, con IA</h1>
+      <p>Elegí el documento que necesitás, respondé unas preguntas simples y descargá el PDF listo.</p>
+    </div>
+
+    <p class="section-label">¿Qué necesitás hoy?</p>
+
+    <div class="doc-grid" id="docGrid">
+      <!-- Generado por JS -->
+    </div>
+
+    <div class="disclaimer">
+      <span class="disclaimer-icon">⚠️</span>
+      <p><strong>Importante:</strong> Los documentos generados son borradores orientativos. Consultá con un profesional antes de firmarlo.</p>
+    </div>
+
+  </div>
+
+  <!-- ─── VIEW: CHAT ──────────────────────────────────────────── -->
+  <div class="view" id="viewChat">
+    <div class="chat-view">
+
+      <div class="chat-header">
+        <button class="btn-back" id="chatBackBtn" aria-label="Volver">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10 3L5 8l5 5"/>
+          </svg>
+        </button>
+        <div class="chat-header-info">
+          <div class="chat-doc-name" id="chatDocName"></div>
+          <div class="chat-step-label" id="chatStepLabel"></div>
+          <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+        </div>
+      </div>
+
+      <div class="chat-body" id="chatBody">
+        <!-- Pregunta actual y respondidas aquí -->
+      </div>
+
+      <div class="chat-footer">
+        <div class="chat-input-row">
+          <textarea
+            class="chat-input"
+            id="chatInput"
+            placeholder="Escribí tu respuesta…"
+            rows="1"
+          ></textarea>
+          <button class="btn-send" id="sendBtn" aria-label="Enviar">
+            <svg viewBox="0 0 18 18" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M15 9H3M9 3l6 6-6 6"/>
+            </svg>
+          </button>
+        </div>
+        <p class="chat-disclaimer">⚠️ Borrador orientativo — consultá con un profesional antes de firmarlo.</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ─── VIEW: PREVIEW ───────────────────────────────────────── -->
+  <div class="view" id="viewPreview">
+    <div class="preview-view">
+
+      <div class="preview-header">
+        <button class="btn-back" id="previewBackBtn" aria-label="Volver">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10 3L5 8l5 5"/>
+          </svg>
+        </button>
+        <div class="preview-title" id="previewTitle"></div>
+      </div>
+
+      <div class="preview-body">
+        <div class="doc-paper" id="docPaper"></div>
+      </div>
+
+      <div class="preview-footer">
+        <button class="btn-restart" id="previewRestartBtn">← Nuevo</button>
+        <button class="btn-download" id="downloadBtn">
+          <svg viewBox="0 0 18 18" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 3v9M5 8l4 4 4-4"/>
+            <path d="M3 14h12"/>
+          </svg>
+          Descargar PDF
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /app-shell -->
+
+<!-- ══════════════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════════════ -->
+<script>
+/* ═══════════════════════════════════════════
+   CONFIGURACIÓN — reemplazá con tu key de Google
+   Obtené tu key gratis en: aistudio.google.com
+═══════════════════════════════════════════ */
+const GEMINI_KEY = 'YOUR_GEMINI_KEY_HERE'; // ← pegá tu key acá
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`;
+
+/* ═══════════════════════════════════════════
+   CATÁLOGO DE DOCUMENTOS
+═══════════════════════════════════════════ */
+const DOCUMENTS = [
+  {
+    id: 'contrato_alquiler',
+    nombre: 'Contrato de Alquiler',
+    icono: '🏠',
+    descripcion: 'Alquiler de inmueble entre partes',
+    preguntas: [
+      { key: 'propietario_nombre',   label: 'Nombre completo del propietario',          hint: 'Tal como figura en el DNI' },
+      { key: 'propietario_dni',      label: 'DNI del propietario',                       hint: 'Sin puntos ni espacios' },
+      { key: 'inquilino_nombre',     label: 'Nombre completo del inquilino',             hint: null },
+      { key: 'inquilino_dni',        label: 'DNI del inquilino',                         hint: null },
+      { key: 'inmueble_direccion',   label: 'Dirección exacta del inmueble',             hint: 'Calle, número, piso/depto, localidad, provincia' },
+      { key: 'alquiler_monto',       label: 'Monto mensual del alquiler',                hint: 'En pesos o dólares, ej: $150.000' },
+      { key: 'alquiler_duracion',    label: '¿Cuánto dura el contrato?',                 hint: 'Ej: 2 años, desde el 1/3/2025' },
+      { key: 'deposito',             label: 'Depósito de garantía',                      hint: 'Ej: un mes de alquiler' },
+    ],
+    promptSistema: `Eres un asistente legal argentino. Generás contratos de alquiler en español rioplatense formal, siguiendo la Ley de Alquileres argentina.
+Cuando el usuario haya respondido todas las preguntas, generá el contrato completo con: datos de las partes, descripción del inmueble, monto y condiciones de pago, duración, depósito, cláusulas estándar (uso del inmueble, servicios, rescisión, prórroga), y espacios para firmas.
+Usá formato legal claro, con secciones numeradas. Al final incluí el disclaimer: "DOCUMENTO GENERADO POR IA — BORRADOR ORIENTATIVO. Consulte con un profesional antes de suscribir."`,
+  },
+  {
+    id: 'carta_documento',
+    nombre: 'Carta Documento',
+    icono: '📮',
+    descripcion: 'Notificación formal con valor legal',
+    preguntas: [
+      { key: 'remitente_nombre',   label: '¿Quién envía la carta documento?',         hint: 'Tu nombre completo o razón social' },
+      { key: 'remitente_dni',      label: 'DNI o CUIT del remitente',                  hint: null },
+      { key: 'destinatario_nombre',label: '¿A quién va dirigida?',                     hint: 'Nombre completo o razón social' },
+      { key: 'destinatario_dir',   label: 'Domicilio del destinatario',                hint: 'Dirección donde se enviará' },
+      { key: 'motivo',             label: '¿Cuál es el motivo de la carta documento?', hint: 'Explicalo con tus palabras, sin tecnicismos' },
+      { key: 'reclamo_detalle',    label: '¿Qué pedís o reclamás exactamente?',        hint: 'Sé específico: monto, plazo, acción concreta' },
+      { key: 'plazo_respuesta',    label: '¿Qué plazo le das para responder?',         hint: 'Ej: 5 días hábiles' },
+    ],
+    promptSistema: `Eres un asistente legal argentino. Redactás cartas documento en español rioplatense formal y legal.
+Con los datos del usuario, generá una carta documento completa: encabezado formal, identificación de las partes, exposición clara de los hechos, la intimación o reclamo concreto, el plazo otorgado, y las consecuencias legales de no cumplir.
+Usá el tono formal propio de las cartas documento argentinas. Al final incluí: "DOCUMENTO GENERADO POR IA — BORRADOR ORIENTATIVO."`,
+  },
+  {
+    id: 'autorizacion_menor',
+    nombre: 'Autorización para Menor',
+    icono: '✈️',
+    descripcion: 'Para que un menor viaje sin tutores',
+    preguntas: [
+      { key: 'menor_nombre',       label: 'Nombre completo del menor',                 hint: null },
+      { key: 'menor_dni',          label: 'DNI del menor',                             hint: null },
+      { key: 'menor_nacimiento',   label: 'Fecha de nacimiento del menor',             hint: 'DD/MM/AAAA' },
+      { key: 'padre_nombre',       label: 'Nombre del padre / tutor que autoriza',     hint: null },
+      { key: 'padre_dni',          label: 'DNI del padre / tutor',                     hint: null },
+      { key: 'madre_nombre',       label: 'Nombre de la madre / tutora (si aplica)',   hint: 'Escribí "no aplica" si no corresponde' },
+      { key: 'madre_dni',          label: 'DNI de la madre / tutora',                  hint: 'O escribí "no aplica"' },
+      { key: 'acompanante',        label: '¿Con quién viaja el menor?',               hint: 'Nombre y DNI del acompañante adulto' },
+      { key: 'destino',            label: 'Destino del viaje',                         hint: 'País, ciudad o provincia' },
+      { key: 'fecha_viaje',        label: 'Fechas del viaje',                          hint: 'Ida y vuelta, ej: del 10 al 20 de enero de 2025' },
+    ],
+    promptSistema: `Eres un asistente legal argentino. Redactás autorizaciones para viaje de menores según la normativa del Registro Nacional de las Personas (RENAPER) y Migraciones Argentina.
+Generá el documento completo con: identificación del menor, datos de los padres/tutores, identificación del acompañante, destino y fechas, declaración de autorización expresa, y la nota de que debe ser certificado ante escribano o comisaría para tener validez plena.
+Al final incluí: "DOCUMENTO GENERADO POR IA — BORRADOR ORIENTATIVO. Este documento debe ser certificado ante escribano o autoridad policial para su validez."`,
+  },
+  {
+    id: 'renuncia_laboral',
+    nombre: 'Carta de Renuncia',
+    icono: '📝',
+    descripcion: 'Renuncia laboral con fuerza legal',
+    preguntas: [
+      { key: 'empleado_nombre',  label: 'Tu nombre completo',                          hint: 'Tal como figura en tu recibo de sueldo' },
+      { key: 'empleado_dni',     label: 'Tu DNI',                                      hint: null },
+      { key: 'empresa_nombre',   label: 'Nombre de la empresa',                        hint: null },
+      { key: 'empleador_nombre', label: 'Nombre del empleador o responsable de RRHH',  hint: 'A quien va dirigida' },
+      { key: 'cargo',            label: '¿Cuál es tu cargo actual?',                   hint: 'Ej: Vendedor, Administrativo, Gerente' },
+      { key: 'fecha_inicio',     label: 'Fecha de ingreso a la empresa',               hint: 'DD/MM/AAAA' },
+      { key: 'fecha_efectiva',   label: '¿Cuándo se hace efectiva la renuncia?',       hint: 'La Ley exige 15 días de preaviso como mínimo' },
+    ],
+    promptSistema: `Eres un asistente legal argentino especializado en derecho laboral. Redactás cartas de renuncia según la LCT (Ley de Contrato de Trabajo), Art. 240.
+Generá la carta de renuncia completa: lugar y fecha, destinatario, cuerpo formal con la expresión de renuncia, cargo, fecha efectiva respetando el preaviso legal, y solicitud de liquidación final.
+Usá tono formal pero correcto. Al final incluí: "DOCUMENTO GENERADO POR IA — BORRADOR ORIENTATIVO. Recomendamos enviarla por telegrama colacionado o carta documento para tener prueba fehaciente."`,
+  },
+  {
+    id: 'acuerdo_cuotas',
+    nombre: 'Acuerdo en Cuotas',
+    icono: '🤝',
+    descripcion: 'Plan de pago entre deudor y acreedor',
+    preguntas: [
+      { key: 'acreedor_nombre',  label: 'Nombre del acreedor (quien cobra)',            hint: 'Persona o empresa que recibe el pago' },
+      { key: 'acreedor_dni',     label: 'DNI o CUIT del acreedor',                     hint: null },
+      { key: 'deudor_nombre',    label: 'Nombre del deudor (quien paga)',               hint: null },
+      { key: 'deudor_dni',       label: 'DNI del deudor',                               hint: null },
+      { key: 'deuda_monto',      label: 'Monto total de la deuda',                      hint: 'En pesos o dólares, ej: $500.000' },
+      { key: 'deuda_origen',     label: '¿Por qué se originó la deuda?',               hint: 'Ej: préstamo personal, mercadería, servicios' },
+      { key: 'cuotas_cantidad',  label: '¿En cuántas cuotas se pagará?',               hint: null },
+      { key: 'cuota_monto',      label: 'Monto de cada cuota',                          hint: null },
+      { key: 'primer_vencimiento',label: 'Fecha del primer vencimiento',               hint: 'DD/MM/AAAA' },
+    ],
+    promptSistema: `Eres un asistente legal argentino. Redactás acuerdos de pago en cuotas de forma clara y legalmente válida.
+Generá el acuerdo completo: identificación de las partes, reconocimiento de deuda, plan de cuotas detallado (tabla con número, monto y vencimiento), penalidad por mora, domicilios constituidos, y cláusula de rescisión anticipada.
+Incluí espacio para firmas con aclaración y fecha. Al final: "DOCUMENTO GENERADO POR IA — BORRADOR ORIENTATIVO."`,
+  },
+  {
+    id: 'baja_servicio',
+    nombre: 'Solicitud de Baja',
+    icono: '🚫',
+    descripcion: 'Baja de servicio o suscripción',
+    preguntas: [
+      { key: 'cliente_nombre',   label: 'Tu nombre completo',                          hint: null },
+      { key: 'cliente_dni',      label: 'Tu DNI o CUIT',                               hint: null },
+      { key: 'empresa',          label: '¿A qué empresa le pedís la baja?',            hint: 'Ej: Telecentro, Personal, Netflix, gimnasio' },
+      { key: 'servicio',         label: '¿Qué servicio o producto querés dar de baja?',hint: 'Sé específico' },
+      { key: 'numero_cliente',   label: 'Número de cliente o contrato',                hint: 'Figura en tu factura o contrato' },
+      { key: 'motivo',           label: '¿Cuál es el motivo de la baja?',              hint: 'No estás obligado, pero ayuda a tu reclamo' },
+      { key: 'fecha_efectiva',   label: '¿Cuándo querés que sea efectiva la baja?',   hint: 'Ej: a partir de la fecha de recepción' },
+    ],
+    promptSistema: `Eres un asistente legal argentino. Redactás solicitudes de baja de servicio invocando los derechos del consumidor según la Ley 24.240 de Defensa del Consumidor.
+Generá la nota completa: datos del solicitante, identificación del servicio, solicitud formal de baja, fecha efectiva, plazo que le otorgás para confirmar (48hs hábiles), y advertencia de que en caso de incumplimiento se iniciará denuncia ante SIGEN/organismos de defensa del consumidor.
+Al final: "DOCUMENTO GENERADO POR IA — BORRADOR ORIENTATIVO."`,
+  },
+  {
+    id: 'poder_simple',
+    nombre: 'Poder Simple',
+    icono: '⚖️',
+    descripcion: 'Autorización para actuar en tu nombre',
+    preguntas: [
+      { key: 'poderdante_nombre',label: 'Tu nombre completo (quien da el poder)',       hint: null },
+      { key: 'poderdante_dni',   label: 'Tu DNI',                                      hint: null },
+      { key: 'poderdante_dir',   label: 'Tu domicilio',                                hint: null },
+      { key: 'apoderado_nombre', label: 'Nombre de quien recibe el poder',             hint: 'A quién autorizás a actuar' },
+      { key: 'apoderado_dni',    label: 'DNI del apoderado',                           hint: null },
+      { key: 'facultades',       label: '¿Para qué lo autorizás exactamente?',         hint: 'Ej: cobrar cheques, firmar documentos, gestionar trámite X' },
+      { key: 'vigencia',         label: '¿Hasta cuándo tiene vigencia el poder?',      hint: 'Ej: hasta el 31/12/2025, o "por tiempo indeterminado"' },
+    ],
+    promptSistema: `Eres un asistente legal argentino. Redactás poderes simples (instrumento privado) según el Código Civil y Comercial argentino.
+Generá el poder completo: declaración del poderdante, identificación de las partes, descripción precisa de las facultades otorgadas, limitaciones si las hay, vigencia, y espacio para firma con certificación notarial.
+Incluí nota importante: para ciertos trámites (bancarios, inmobiliarios, etc.) puede requerirse poder ante escribano público.
+Al final: "DOCUMENTO GENERADO POR IA — BORRADOR ORIENTATIVO. Consulte con un escribano para determinar si este documento requiere autenticación notarial."`,
+  },
+  {
+    id: 'nota_reclamo',
+    nombre: 'Nota de Reclamo',
+    icono: '📣',
+    descripcion: 'Reclamo formal ante empresa o persona',
+    preguntas: [
+      { key: 'reclamante_nombre',label: 'Tu nombre completo',                          hint: null },
+      { key: 'reclamante_dni',   label: 'Tu DNI o CUIT',                               hint: null },
+      { key: 'reclamante_dir',   label: 'Tu domicilio',                                hint: 'Para que puedan responderte' },
+      { key: 'reclamado',        label: '¿A quién le reclamás?',                       hint: 'Empresa, persona, organismo' },
+      { key: 'hecho',            label: '¿Qué pasó? Describí el problema',             hint: 'Con fechas y detalles concretos' },
+      { key: 'perjuicio',        label: '¿Qué daño o perjuicio sufriste?',             hint: 'Económico, servicio no prestado, producto defectuoso, etc.' },
+      { key: 'solucion',         label: '¿Qué solución pedís?',                        hint: 'Ej: reembolso de $X, reparación, cumplimiento del contrato' },
+      { key: 'plazo',            label: '¿Qué plazo le das para resolver?',            hint: 'Ej: 5 días hábiles' },
+    ],
+    promptSistema: `Eres un asistente legal argentino. Redactás notas de reclamo formales y efectivas, invocando cuando corresponde la Ley 24.240 de Defensa del Consumidor.
+Generá la nota completa: identificación del reclamante y reclamado, exposición clara y cronológica de los hechos, el perjuicio sufrido, la solución exigida, el plazo otorgado, y advertencia de acciones legales y/o denuncia ante organismos competentes (Defensa del Consumidor, ENACOM, etc.) en caso de incumplimiento.
+Usá tono firme pero profesional. Al final: "DOCUMENTO GENERADO POR IA — BORRADOR ORIENTATIVO."`,
+  },
+
+  /* ── NUEVOS DOCUMENTOS ─────────────────── */
+
+  {
+    id: 'constancia_alumno',
+    nombre: 'Constancia de Alumno',
+    icono: '🎓',
+    descripcion: 'Constancia de alumno regular',
+    preguntas: [
+      { key: 'alumno_nombre',    label: '¿Cuál es tu nombre completo?',                hint: null },
+      { key: 'alumno_dni',       label: 'Tu DNI',                                      hint: null },
+      { key: 'institucion',      label: '¿En qué institución estudiás?',               hint: 'Nombre completo del colegio, instituto o universidad' },
+      { key: 'carrera_curso',    label: '¿Qué carrera o curso cursás?',                hint: 'Ej: Abogacía, 5° año Secundario, Tecnicatura en Diseño' },
+      { key: 'anio_cursada',     label: '¿En qué año o nivel estás?',                  hint: 'Ej: 3er año, 1er cuatrimestre 2025' },
+      { key: 'turno',            label: '¿En qué turno cursás?',                       hint: 'Mañana, tarde, noche o virtual' },
+      { key: 'destinatario',     label: '¿A quién va dirigida la constancia?',         hint: 'Ej: empleador, banco, obra social, trámite migratorio' },
+    ],
+    promptSistema: `Eres un asistente administrativo argentino. Redactás constancias de alumno regular en español formal.
+Generá la constancia completa con: membrete de la institución (con espacio para completar), número de constancia, datos del alumno, carrera/curso, año lectivo en curso, estado regular, destinatario, lugar y fecha, y espacio para firma y sello de autoridad académica.
+Incluí una nota: "La presente constancia tiene validez por 30 días desde su emisión."
+Al final: "DOCUMENTO GENERADO POR IA — BORRADOR ORIENTATIVO. Debe ser completada y firmada por la institución educativa."`,
+  },
+
+  {
+    id: 'permiso_salida',
+    nombre: 'Permiso Salida Escolar',
+    icono: '🚌',
+    descripcion: 'Autorización para evento o excursión',
+    preguntas: [
+      { key: 'alumno_nombre',    label: 'Nombre completo del alumno/a',                hint: null },
+      { key: 'alumno_dni',       label: 'DNI del alumno/a',                            hint: null },
+      { key: 'grado_curso',      label: '¿En qué grado o curso está?',                hint: 'Ej: 4° B, 2° año secundario' },
+      { key: 'institucion',      label: 'Nombre de la institución educativa',          hint: null },
+      { key: 'evento',           label: '¿A qué evento o salida va?',                 hint: 'Ej: visita al museo, campamento, obra de teatro' },
+      { key: 'destino',          label: '¿Cuál es el destino?',                       hint: 'Lugar o dirección' },
+      { key: 'fecha_hora',       label: 'Fecha y horario del evento',                  hint: 'Ej: 15/05/2025 de 9hs a 17hs' },
+      { key: 'padre_madre',      label: 'Nombre del padre/madre/tutor que autoriza',   hint: null },
+      { key: 'padre_dni',        label: 'DNI del padre/madre/tutor',                  hint: null },
+    ],
+    promptSistema: `Eres un asistente educativo argentino. Redactás autorizaciones para salidas o eventos escolares.
+Generá el formulario completo: datos del alumno, institución, descripción del evento, destino, fechas y horarios, declaración del tutor autorizando la participación, aclaración de que el alumno puede recibir primeros auxilios en caso de emergencia, y datos de contacto del tutor para emergencias.
+Formato de formulario con casilleros para completar donde corresponda.
+Al final: "DOCUMENTO GENERADO POR IA — BORRADOR ORIENTATIVO. Debe ser entregado a la institución con firma del tutor."`,
+  },
+
+  {
+    id: 'convivencia_comparte',
+    nombre: 'Acuerdo de Convivencia',
+    icono: '🏡',
+    descripcion: 'Reglas entre personas que comparten piso',
+    preguntas: [
+      { key: 'persona1_nombre',  label: 'Nombre de la primera persona',                hint: null },
+      { key: 'persona1_dni',     label: 'DNI de la primera persona',                  hint: null },
+      { key: 'persona2_nombre',  label: 'Nombre de la segunda persona',               hint: null },
+      { key: 'persona2_dni',     label: 'DNI de la segunda persona',                  hint: null },
+      { key: 'persona3',         label: '¿Hay más personas en el acuerdo?',           hint: 'Nombre y DNI, o escribí "no" si son solo dos' },
+      { key: 'domicilio',        label: 'Dirección del inmueble compartido',           hint: null },
+      { key: 'gastos_comunes',   label: '¿Cómo se dividen los gastos comunes?',       hint: 'Ej: en partes iguales, según el cuarto ocupado' },
+      { key: 'limpieza',         label: '¿Cómo organizan la limpieza?',               hint: 'Ej: turnos semanales, cada uno limpia lo suyo' },
+      { key: 'visitas',          label: '¿Hay reglas sobre visitas o ruidos?',        hint: 'Ej: sin visitas después de las 23hs, avisar con anticipación' },
+      { key: 'vigencia',         label: '¿Cuánto dura el acuerdo?',                   hint: 'Ej: mientras dure la convivencia, 1 año' },
+    ],
+    promptSistema: `Eres un asistente legal argentino. Redactás acuerdos de convivencia entre personas que comparten vivienda, en tono claro y directo (no excesivamente formal, pero sí vinculante).
+Generá el acuerdo completo con: identificación de las partes, dirección del inmueble, secciones sobre: gastos y servicios, limpieza y orden, uso de espacios comunes, visitas y ruidos, privacidad, resolución de conflictos, y vigencia del acuerdo.
+Incluí cláusula de modificación por acuerdo escrito de todas las partes.
+Al final: "DOCUMENTO GENERADO POR IA — BORRADOR ORIENTATIVO."`,
+  },
+
+  {
+    id: 'prestamo_dinero',
+    nombre: 'Préstamo de Dinero',
+    icono: '💸',
+    descripcion: 'Contrato entre prestamista y deudor',
+    preguntas: [
+      { key: 'prestamista_nombre',label: 'Nombre del prestamista (quien presta)',      hint: 'La persona que da el dinero' },
+      { key: 'prestamista_dni',  label: 'DNI del prestamista',                        hint: null },
+      { key: 'deudor_nombre',    label: 'Nombre del deudor (quien recibe)',            hint: null },
+      { key: 'deudor_dni',       label: 'DNI del deudor',                             hint: null },
+      { key: 'monto',            label: '¿Cuánto dinero se presta?',                  hint: 'En pesos o dólares, ej: $200.000' },
+      { key: 'fecha_entrega',    label: '¿Cuándo se entrega el dinero?',              hint: 'DD/MM/AAAA o "a la firma del contrato"' },
+      { key: 'forma_devolucion', label: '¿Cómo se devuelve?',                         hint: 'Ej: en un solo pago, en cuotas mensuales' },
+      { key: 'fecha_devolucion', label: '¿Cuándo debe devolverse?',                   hint: 'Fecha límite o cantidad de cuotas' },
+      { key: 'interes',          label: '¿Se cobra interés?',                          hint: 'Ej: sin interés, o 5% mensual. Escribí "sin interés" si no aplica' },
+    ],
+    promptSistema: `Eres un asistente legal argentino. Redactás contratos de mutuo (préstamo de dinero) según el Código Civil y Comercial argentino, Arts. 1525-1532.
+Generá el contrato completo con: identificación de las partes, monto prestado (en letras y números), fecha y forma de entrega, plan de devolución, tasa de interés compensatorio y punitorio si aplica, mora automática, domicilios constituidos, y espacio para firmas con fecha.
+Al final: "DOCUMENTO GENERADO POR IA — BORRADOR ORIENTATIVO. Para mayor seguridad jurídica, se recomienda la certificación de firmas ante escribano."`,
+  },
+
+  {
+    id: 'autorizacion_tatuaje',
+    nombre: 'Autorización Tatuaje/Piercing',
+    icono: '🎨',
+    descripcion: 'Permiso parental para menores de edad',
+    preguntas: [
+      { key: 'menor_nombre',     label: 'Nombre completo del menor',                  hint: null },
+      { key: 'menor_dni',        label: 'DNI del menor',                              hint: null },
+      { key: 'menor_nacimiento', label: 'Fecha de nacimiento del menor',              hint: 'DD/MM/AAAA' },
+      { key: 'tutor_nombre',     label: 'Nombre del padre/madre/tutor que autoriza',  hint: null },
+      { key: 'tutor_dni',        label: 'DNI del tutor',                              hint: null },
+      { key: 'tutor_vinculo',    label: '¿Qué vínculo tiene con el menor?',           hint: 'Ej: padre, madre, tutor legal' },
+      { key: 'tipo_procedimiento',label: '¿Qué procedimiento se autoriza?',           hint: 'Ej: tatuaje en el antebrazo, perforación de oreja, piercing nasal' },
+      { key: 'establecimiento',  label: 'Nombre del establecimiento',                  hint: 'Estudio de tatuajes o local de piercing' },
+      { key: 'fecha_turno',      label: 'Fecha del turno o procedimiento',            hint: 'DD/MM/AAAA' },
+    ],
+    promptSistema: `Eres un asistente legal argentino. Redactás autorizaciones parentales para que menores de edad realicen tatuajes o piercings, según las normativas provinciales argentinas de habilitación de estudios.
+Generá la autorización completa con: identificación del menor y del tutor, vínculo, procedimiento específico autorizado, establecimiento, fecha, declaración jurada del tutor de ser responsable legal, y conocimiento de los cuidados post-procedimiento.
+Incluí espacio para firma del tutor con aclaración y número de DNI visible.
+Al final: "DOCUMENTO GENERADO POR IA — BORRADOR ORIENTATIVO. Algunos establecimientos pueden requerir presencia del tutor o certificación notarial. Verificá los requisitos del local."`,
+  },
+
+  {
+    id: 'ausencia_justificada',
+    nombre: 'Nota de Ausencia',
+    icono: '📋',
+    descripcion: 'Justificación de inasistencia escolar',
+    preguntas: [
+      { key: 'alumno_nombre',    label: 'Nombre completo del alumno/a',                hint: null },
+      { key: 'grado_curso',      label: '¿En qué grado o curso está?',                hint: 'Ej: 3° B primaria, 1° año secundario' },
+      { key: 'institucion',      label: 'Nombre de la institución educativa',          hint: null },
+      { key: 'docente',          label: '¿A quién va dirigida la nota?',              hint: 'Ej: "Señora directora", "Profesor/a de historia"' },
+      { key: 'fechas_ausencia',  label: '¿Qué días faltó?',                           hint: 'Ej: lunes 14 y martes 15 de abril de 2025' },
+      { key: 'motivo',           label: '¿Cuál fue el motivo de la ausencia?',        hint: 'Ej: enfermedad, turno médico, viaje familiar, trámite' },
+      { key: 'tutor_nombre',     label: 'Tu nombre (padre/madre/tutor)',               hint: null },
+      { key: 'tutor_vinculo',    label: '¿Qué vínculo tenés con el alumno/a?',        hint: 'Ej: madre, padre, tutor legal' },
+    ],
+    promptSistema: `Eres un asistente educativo argentino. Redactás notas de ausencia justificada en tono cordial y respetuoso.
+Generá la nota completa con: lugar y fecha, destinatario, cuerpo explicando el motivo de la ausencia de forma clara sin exceso de detalles íntimos, solicitud de justificación de la inasistencia, ofrecimiento a presentar certificado médico o documentación si fuera necesario, y cierre con firma del tutor.
+Tono: formal pero cálido, no burocrático.
+Al final: "DOCUMENTO GENERADO POR IA — BORRADOR ORIENTATIVO."`,
+  },
+
+  {
+    id: 'recibo_alquiler',
+    nombre: 'Recibo de Alquiler',
+    icono: '🧾',
+    descripcion: 'Comprobante de pago de alquiler',
+    preguntas: [
+      { key: 'propietario_nombre',label: 'Nombre del propietario o administrador',    hint: 'Quien cobra el alquiler' },
+      { key: 'propietario_dni',  label: 'DNI o CUIT del propietario',                hint: null },
+      { key: 'inquilino_nombre', label: 'Nombre del inquilino',                       hint: 'Quien paga' },
+      { key: 'inquilino_dni',    label: 'DNI del inquilino',                          hint: null },
+      { key: 'inmueble',         label: 'Dirección del inmueble alquilado',           hint: null },
+      { key: 'periodo',          label: '¿Por qué período es el pago?',              hint: 'Ej: mes de mayo 2025' },
+      { key: 'monto',            label: '¿Cuánto se pagó?',                          hint: 'Monto exacto en pesos o dólares' },
+      { key: 'forma_pago',       label: '¿Cómo se realizó el pago?',                 hint: 'Ej: efectivo, transferencia bancaria, cheque' },
+      { key: 'fecha_pago',       label: 'Fecha en que se realizó el pago',           hint: 'DD/MM/AAAA' },
+    ],
+    promptSistema: `Eres un asistente legal argentino. Redactás recibos de alquiler simples y válidos.
+Generá el recibo completo con: número de recibo, lugar y fecha, identificación del propietario y el inquilino, dirección del inmueble, período abonado, monto en letras y números, forma de pago, y declaración de que el pago fue recibido en conformidad.
+Diseño limpio con todos los datos claramente separados. Espacio para firma del propietario o administrador.
+Al final: "DOCUMENTO GENERADO POR IA — BORRADOR ORIENTATIVO."`,
+  },
+];
+
+/* ═══════════════════════════════════════════
+   ESTADO GLOBAL
+═══════════════════════════════════════════ */
+const state = {
+  currentDoc: null,
+  answers: {},
+  currentStep: 0,
+  generatedDoc: '',
+};
+
+/* ═══════════════════════════════════════════
+   VISTAS
+═══════════════════════════════════════════ */
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  // Header solo en home
+  document.getElementById('mainHeader').style.display = id === 'viewHome' ? 'flex' : 'none';
+}
+
+/* ═══════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════ */
+function showToast(msg, duration = 3000) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), duration);
+}
+
+/* ═══════════════════════════════════════════
+   HOME — RENDERIZAR GRID
+═══════════════════════════════════════════ */
+function renderGrid() {
+  const grid = document.getElementById('docGrid');
+  grid.innerHTML = DOCUMENTS.map(doc => `
+    <div class="doc-card" data-id="${doc.id}" role="button" tabindex="0" aria-label="${doc.nombre}">
+      <div class="doc-icon">${doc.icono}</div>
+      <div class="doc-info">
+        <div class="doc-name">${doc.nombre}</div>
+        <div class="doc-desc">${doc.descripcion}</div>
+      </div>
+    </div>
+  `).join('');
+
+  grid.querySelectorAll('.doc-card').forEach(card => {
+    const open = () => startDocument(card.dataset.id);
+    card.addEventListener('click', open);
+    card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') open(); });
+  });
+}
+
+/* ═══════════════════════════════════════════
+   INICIAR DOCUMENTO
+═══════════════════════════════════════════ */
+function startDocument(id) {
+  const doc = DOCUMENTS.find(d => d.id === id);
+  if (!doc) return;
+
+  state.currentDoc = doc;
+  state.answers = {};
+  state.currentStep = 0;
+
+  document.getElementById('chatDocName').textContent = doc.nombre;
+  showView('viewChat');
+  renderChatStep();
+}
+
+/* ═══════════════════════════════════════════
+   CHAT — RENDERIZAR PASO
+═══════════════════════════════════════════ */
+function renderChatStep() {
+  const doc = state.currentDoc;
+  const total = doc.preguntas.length;
+  const step = state.currentStep;
+  const pregunta = doc.preguntas[step];
+
+  // Header progress
+  document.getElementById('chatStepLabel').textContent = `Pregunta ${step + 1} de ${total}`;
+  document.getElementById('progressFill').style.width = `${((step) / total) * 100}%`;
+
+  // Body
+  const body = document.getElementById('chatBody');
+
+  // Answered items
+  const answered = doc.preguntas.slice(0, step).map(p => `
+    <div class="answered-item">
+      <span class="answered-key">${p.label}:</span>
+      <span class="answered-val">${state.answers[p.key] || '—'}</span>
+      <span class="answered-check">✓</span>
+    </div>
+  `).join('');
+
+  body.innerHTML = `
+    <div class="question-block">
+      <div class="question-chip">
+        <span>✦</span> Pregunta ${step + 1}/${total}
+      </div>
+      <div class="question-text">${pregunta.label}</div>
+      ${pregunta.hint ? `<div class="question-hint">${pregunta.hint}</div>` : ''}
+    </div>
+
+    ${step > 0 ? `
+      <div class="answered-section">
+        <div class="answered-label">Ya respondiste</div>
+        <div class="answered-list">${answered}</div>
+      </div>
+    ` : ''}
+  `;
+
+  body.scrollTop = 0;
+
+  // Input
+  const input = document.getElementById('chatInput');
+  input.value = '';
+  input.style.height = 'auto';
+  input.disabled = false;
+  document.getElementById('sendBtn').disabled = false;
+  setTimeout(() => input.focus(), 100);
+}
+
+/* ═══════════════════════════════════════════
+   CHAT — ENVIAR RESPUESTA
+═══════════════════════════════════════════ */
+function sendAnswer() {
+  const input = document.getElementById('chatInput');
+  const val = input.value.trim();
+  if (!val) return;
+
+  const doc = state.currentDoc;
+  const pregunta = doc.preguntas[state.currentStep];
+
+  state.answers[pregunta.key] = val;
+  state.currentStep++;
+
+  if (state.currentStep >= doc.preguntas.length) {
+    // Todas las preguntas respondidas → generar documento
+    generateDocument();
+  } else {
+    renderChatStep();
+  }
+}
+
+document.getElementById('sendBtn').addEventListener('click', sendAnswer);
+document.getElementById('chatInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendAnswer();
+  }
+});
+
+// Auto-resize textarea
+document.getElementById('chatInput').addEventListener('input', function() {
+  this.style.height = 'auto';
+  this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+});
+
+/* ═══════════════════════════════════════════
+   GENERAR DOCUMENTO VÍA CLAUDE API
+═══════════════════════════════════════════ */
+async function generateDocument() {
+  const doc = state.currentDoc;
+
+  // Mostrar overlay
+  document.getElementById('generatingOverlay').classList.remove('hidden');
+  document.getElementById('chatInput').disabled = true;
+  document.getElementById('sendBtn').disabled = true;
+
+  // Construir contexto con las respuestas
+  const resumen = doc.preguntas.map(p =>
+    `${p.label}: ${state.answers[p.key] || 'No especificado'}`
+  ).join('\n');
+
+  const userMessage = `Generá el documento completo con los siguientes datos:\n\n${resumen}\n\nGenerá el documento listo para imprimir, sin explicaciones previas, solo el documento.`;
+
+  try {
+    const response = await fetch(GEMINI_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        system_instruction: { parts: [{ text: doc.promptSistema }] },
+        contents: [{ role: 'user', parts: [{ text: userMessage }] }],
+        generationConfig: { temperature: 0.3, maxOutputTokens: 4096 },
+      }),
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      if (response.status === 400) throw new Error('API key inválida. Verificá tu clave en aistudio.google.com');
+      throw new Error(err.error?.message || `Error ${response.status}`);
+    }
+
+    const data = await response.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+    if (!text) throw new Error('El documento llegó vacío. Intentá de nuevo.');
+
+    state.generatedDoc = text;
+    showPreview();
+
+  } catch (err) {
+    console.error(err);
+    showToast('❌ ' + (err.message || 'Error al generar el documento'), 5000);
+    // Volver al último paso
+    state.currentStep = Math.max(0, state.currentStep - 1);
+    renderChatStep();
+  } finally {
+    document.getElementById('generatingOverlay').classList.add('hidden');
+  }
+}
+
+/* ═══════════════════════════════════════════
+   MOSTRAR PREVIEW
+═══════════════════════════════════════════ */
+function showPreview() {
+  document.getElementById('previewTitle').textContent = state.currentDoc.nombre;
+  document.getElementById('docPaper').textContent = state.generatedDoc;
+  showView('viewPreview');
+  document.getElementById('progressFill').style.width = '100%';
+}
+
+/* ═══════════════════════════════════════════
+   GENERAR PDF — DISEÑO PROFESIONAL
+═══════════════════════════════════════════ */
+
+// Colores (R,G,B)
+const PDF_COLORS = {
+  verde:      [45,  106, 79],
+  verde_light:[82,  183, 136],
+  verde_bg:   [216, 243, 220],
+  gris_bg:    [244, 245, 240],
+  gris_borde: [221, 224, 216],
+  tinta:      [26,  29,  23],
+  tinta_2:    [61,  66,  56],
+  tinta_3:    [107, 112, 102],
+  muted:      [155, 163, 154],
+  warn_bg:    [255, 248, 230],
+  warn_border:[240, 192, 64],
+  warn_ink:   [122, 92,  0],
+  blanco:     [255, 255, 255],
+};
+
+function drawHeader(doc, docName, pageW, pageH) {
+  const C = PDF_COLORS;
+  const headerH = 26;
+
+  // Fondo verde header
+  doc.setFillColor(...C.verde);
+  doc.rect(0, 0, pageW, headerH, 'F');
+
+  // Barra acento verde light arriba
+  doc.setFillColor(...C.verde_light);
+  doc.rect(0, 0, pageW, 1.2, 'F');
+
+  // Logo mark
+  doc.setFillColor(...C.verde_light);
+  doc.roundedRect(8, 6, 10, 10, 1.5, 1.5, 'F');
+  doc.setTextColor(...C.blanco);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(6);
+  doc.text('F.ia', 13, 12.5, { align: 'center' });
+
+  // Nombre app
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.setTextColor(...C.blanco);
+  doc.text('Formulario.ia', 22, 11);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(6.5);
+  doc.setTextColor(183, 222, 200);
+  doc.text('Documentos legales con IA', 22, 16.5);
+
+  // Nombre documento — derecha
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.setTextColor(...C.blanco);
+  doc.text(docName.toUpperCase(), pageW - 10, 12, { align: 'right' });
+
+  // Fecha — derecha debajo
+  const fecha = new Date().toLocaleDateString('es-AR', { day:'2-digit', month:'2-digit', year:'numeric' });
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(6.5);
+  doc.setTextColor(183, 222, 200);
+  doc.text(`Generado el ${fecha}`, pageW - 10, 18, { align: 'right' });
+}
+
+function drawFooter(doc, pageNum, totalPages, pageW, pageH) {
+  const C = PDF_COLORS;
+  const footerY = pageH - 10;
+
+  doc.setDrawColor(...C.gris_borde);
+  doc.setLineWidth(0.3);
+  doc.line(10, footerY - 3, pageW - 10, footerY - 3);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(6);
+  doc.setTextColor(...C.muted);
+  doc.text(
+    '⚠  BORRADOR ORIENTATIVO — Consultá con un profesional antes de firmarlo.',
+    10, footerY
+  );
+  doc.text(`Pág. ${pageNum} / ${totalPages}`, pageW - 10, footerY, { align: 'right' });
+}
+
+function drawDisclaimer(doc, x, y, w) {
+  const C = PDF_COLORS;
+  const h = 14;
+
+  // Fondo amarillo
+  doc.setFillColor(...C.warn_bg);
+  doc.setDrawColor(...C.warn_border);
+  doc.setLineWidth(0.5);
+  doc.roundedRect(x, y, w, h, 2, 2, 'FD');
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7);
+  doc.setTextColor(...C.warn_ink);
+  doc.text('⚠  DOCUMENTO GENERADO POR IA — BORRADOR ORIENTATIVO', x + w/2, y + 5, { align: 'center' });
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(6.5);
+  doc.text(
+    'Este documento fue generado por Formulario.ia con fines orientativos. Consultá con un profesional antes de firmarlo.',
+    x + w/2, y + 10, { align: 'center' }
+  );
+
+  return y + h + 6;
+}
+
+function addPageWithHeader(doc, docName, pageW, pageH) {
+  doc.addPage();
+  drawHeader(doc, docName, pageW, pageH);
+}
+
+document.getElementById('downloadBtn').addEventListener('click', () => {
+  if (!window.jspdf) {
+    showToast('Cargando librería PDF…');
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF({ unit: 'mm', format: 'a4', putOnlyUsedFonts: true });
+
+  const C       = PDF_COLORS;
+  const pageW   = 210;
+  const pageH   = 297;
+  const mLeft   = 10;
+  const mRight  = 10;
+  const mTop    = 32;      // debajo del header
+  const mBottom = 16;
+  const contentW = pageW - mLeft - mRight;
+  const maxY    = pageH - mBottom;
+
+  const docName = state.currentDoc.nombre;
+  let y = mTop;
+
+  // Primera página: header
+  drawHeader(pdf, docName, pageW, pageH);
+
+  // Función para chequear salto de página
+  function checkPage(needed = 8) {
+    if (y + needed > maxY) {
+      addPageWithHeader(pdf, docName, pageW, pageH);
+      y = mTop;
+    }
+  }
+
+  // ── PARSEAR Y RENDERIZAR EL TEXTO ──────────────────
+  // Detectamos secciones, cláusulas numeradas y párrafos normales
+  const rawLines = state.generatedDoc.split('\n');
+
+  for (let i = 0; i < rawLines.length; i++) {
+    const line = rawLines[i].trim();
+    if (!line) { y += 3; continue; }
+
+    // Detectar título de cláusula/sección en mayúsculas o con número
+    const isClausula = /^(PRIMERA|SEGUNDA|TERCERA|CUARTA|QUINTA|SEXTA|SÉPTIMA|OCTAVA|NOVENA|DÉCIMA|\d+[\.\-°])/i.test(line) && line.length < 120;
+    const isHeading  = line === line.toUpperCase() && line.length < 80 && line.length > 3 && !/^\d/.test(line);
+    const isFirma    = /firma|propietario|inquilino|acreedor|deudor|parte|aclaración/i.test(line) && line.includes('_');
+
+    if (isClausula) {
+      checkPage(12);
+      // Número/título en verde
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(9);
+      pdf.setTextColor(...C.verde);
+      const parts = pdf.splitTextToSize(line, contentW);
+      parts.forEach(p => {
+        checkPage(6);
+        pdf.text(p, mLeft, y);
+        y += 5.5;
+      });
+      y += 1;
+
+    } else if (isHeading) {
+      checkPage(14);
+      // Separador visual antes de sección
+      if (y > mTop + 10) {
+        pdf.setDrawColor(...C.gris_borde);
+        pdf.setLineWidth(0.3);
+        pdf.line(mLeft, y, pageW - mRight, y);
+        y += 4;
+      }
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(8);
+      pdf.setTextColor(...C.verde);
+      // Letra espaciada
+      pdf.text(line, mLeft, y);
+      y += 6;
+
+    } else {
+      checkPage(6);
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(9.5);
+      pdf.setTextColor(...C.tinta_2);
+      const wrapped = pdf.splitTextToSize(line, contentW);
+      wrapped.forEach(wl => {
+        checkPage(6);
+        pdf.text(wl, mLeft, y);
+        y += 5.5;
+      });
+      y += 1;
+    }
+  }
+
+  // ── DISCLAIMER ─────────────────────────────────────
+  y += 6;
+  checkPage(22);
+  y = drawDisclaimer(pdf, mLeft, y, contentW);
+
+  // ── SECCIÓN DE FIRMAS ──────────────────────────────
+  checkPage(30);
+  y += 2;
+  pdf.setFont('helvetica', 'bold');
+  pdf.setFontSize(8);
+  pdf.setTextColor(...C.verde);
+  pdf.text('FIRMAS', mLeft, y);
+  y += 2;
+  pdf.setDrawColor(...C.verde_light);
+  pdf.setLineWidth(0.5);
+  pdf.line(mLeft, y, mLeft + 20, y);
+  y += 8;
+
+  // Dos columnas de firma
+  const colW = contentW / 2 - 5;
+  const lineLen = colW - 5;
+
+  // Líneas de firma
+  pdf.setDrawColor(...C.tinta_3);
+  pdf.setLineWidth(0.4);
+  pdf.line(mLeft, y, mLeft + lineLen, y);
+  pdf.line(mLeft + colW + 10, y, mLeft + colW + 10 + lineLen, y);
+
+  y += 4;
+  pdf.setFont('helvetica', 'normal');
+  pdf.setFontSize(7.5);
+  pdf.setTextColor(...C.tinta_3);
+  pdf.text('Firma y aclaración — Parte 1', mLeft, y);
+  pdf.text('Firma y aclaración — Parte 2', mLeft + colW + 10, y);
+
+  y += 4;
+  pdf.setFontSize(6.5);
+  pdf.setTextColor(...C.muted);
+  const hoy = new Date().toLocaleDateString('es-AR');
+  pdf.text(`Lugar y fecha: _________________, ${hoy}`, mLeft, y);
+
+  // ── FOOTERS EN TODAS LAS PÁGINAS ───────────────────
+  const totalPages = pdf.getNumberOfPages();
+  for (let p = 1; p <= totalPages; p++) {
+    pdf.setPage(p);
+    drawFooter(pdf, p, totalPages, pageW, pageH);
+  }
+
+  const filename = `${state.currentDoc.id}_${new Date().toISOString().slice(0,10)}.pdf`;
+  pdf.save(filename);
+  showToast('✓ PDF descargado correctamente');
+});
+
+/* ═══════════════════════════════════════════
+   BOTONES DE NAVEGACIÓN
+═══════════════════════════════════════════ */
+document.getElementById('chatBackBtn').addEventListener('click', () => {
+  showView('viewHome');
+});
+
+document.getElementById('previewBackBtn').addEventListener('click', () => {
+  // Volver al último paso del chat
+  state.currentStep = state.currentDoc.preguntas.length - 1;
+  renderChatStep();
+  showView('viewChat');
+});
+
+document.getElementById('previewRestartBtn').addEventListener('click', () => {
+  showView('viewHome');
+});
+
+/* ═══════════════════════════════════════════
+   SCROLL HEADER SHADOW
+═══════════════════════════════════════════ */
+window.addEventListener('scroll', () => {
+  document.getElementById('mainHeader').classList.toggle('scrolled', window.scrollY > 10);
+}, { passive: true });
+
+/* ═══════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════ */
+renderGrid();
+</script>
+</body>
+</html>
