@@ -768,7 +768,7 @@
    CONFIGURACIÓN — reemplazá con tu key de Google
    Obtené tu key gratis en: aistudio.google.com
 ═══════════════════════════════════════════ */
-const GEMINI_KEY = 'AIzaSyDeOCjrhuU6UklbzIs-3Rz4j1uwy_trlsI'; // ← pegá tu key acá
+const GEMINI_KEY = 'YOUR_GEMINI_KEY_HERE'; // ← pegá tu key acá
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`;
 
 /* ═══════════════════════════════════════════
@@ -1080,6 +1080,192 @@ Generá el recibo completo con: número de recibo, lugar y fecha, identificació
 Diseño limpio con todos los datos claramente separados. Espacio para firma del propietario o administrador.
 Al final: "DOCUMENTO GENERADO POR IA — BORRADOR ORIENTATIVO."`,
   },
+
+  {
+    id: 'curriculum_vitae',
+    nombre: 'Currículum Vitae',
+    icono: '📄',
+    descripcion: 'Tu CV listo para mandar a cualquier trabajo',
+    esCv: true,
+    preguntas: [
+      { key: 'nombre',           label: '¿Cuál es tu nombre completo?',                hint: 'Como querés que aparezca en el CV' },
+      { key: 'titulo_profesional',label: '¿Cómo te definís profesionalmente?',         hint: 'Ej: Diseñador gráfico, Estudiante de Administración, Técnico en IT' },
+      { key: 'email',            label: '¿Cuál es tu email?',                          hint: null },
+      { key: 'telefono',         label: '¿Tu número de teléfono?',                     hint: 'Con código de área, ej: 11 1234-5678' },
+      { key: 'ciudad',           label: '¿En qué ciudad vivís?',                       hint: 'Ej: Buenos Aires, Córdoba, Rosario' },
+      { key: 'linkedin',         label: '¿Tenés LinkedIn o portfolio?',                hint: 'URL o escribí "no tengo" si no aplica' },
+      { key: 'resumen',          label: 'Contate en 2-3 oraciones ¿quién sos laboralmente?', hint: 'Tus puntos fuertes, qué buscás, qué te destaca' },
+      { key: 'experiencia',      label: '¿Cuál es tu experiencia laboral?',            hint: 'Empresa, cargo y fechas. Si no tenés, escribí "sin experiencia previa"' },
+      { key: 'educacion',        label: '¿Qué estudiaste o estás estudiando?',         hint: 'Título, institución y año (terminado o en curso)' },
+      { key: 'habilidades',      label: '¿Qué habilidades o herramientas manejás?',   hint: 'Ej: Excel, Photoshop, inglés intermedio, atención al cliente' },
+      { key: 'extras',           label: '¿Algo más que quieras agregar?',              hint: 'Voluntariado, cursos, idiomas, disponibilidad. O escribí "nada más"' },
+    ],
+    promptSistema: `Sos un experto en recursos humanos argentino. Redactás CVs profesionales, modernos y efectivos en español rioplatense.
+
+Con los datos del usuario, generá el CV completo usando EXACTAMENTE este formato estructurado (es importante para que el PDF lo renderice bien):
+
+NOMBRE COMPLETO
+Título profesional
+Email: [email] | Tel: [telefono] | [ciudad] | [linkedin si tiene]
+
+---RESUMEN---
+[2-3 oraciones que vendan al candidato]
+
+---EXPERIENCIA---
+[Cargo] — [Empresa]
+[Período]
+• [logro o responsabilidad clave]
+• [logro o responsabilidad clave]
+
+(Si no tiene experiencia, ponelo como "Actualmente en búsqueda de primera experiencia laboral")
+
+---EDUCACIÓN---
+[Título] — [Institución]
+[Año o "En curso"]
+
+---HABILIDADES---
+[lista separada por comas o bullets cortos]
+
+---EXTRAS---
+[cursos, idiomas, voluntariado, disponibilidad]
+
+Hacelo conciso, impactante y adaptado al perfil. Usá verbos de acción. No uses jerga corporativa vacía.`,
+  },
+
+  {
+    id: 'carta_presentacion',
+    nombre: 'Carta de Presentación',
+    icono: '✉️',
+    descripcion: 'La carta que acompaña tu CV al postularte',
+    preguntas: [
+      { key: 'nombre',           label: '¿Cuál es tu nombre?',                         hint: null },
+      { key: 'puesto',           label: '¿A qué puesto te estás postulando?',          hint: 'Ej: Vendedor, Community Manager, Pasante de Marketing' },
+      { key: 'empresa',          label: '¿A qué empresa le mandás la carta?',          hint: 'Si no sabés el nombre, escribí "la empresa"' },
+      { key: 'por_que',          label: '¿Por qué querés ese trabajo?',                hint: 'Sé honesto, no hace falta sonar corporativo' },
+      { key: 'que_ofreces',      label: '¿Qué podés aportar vos a ese puesto?',       hint: 'Tus habilidades, actitud, experiencia relevante' },
+      { key: 'experiencia_rel',  label: '¿Tenés algo de experiencia o formación relacionada?', hint: 'Aunque sea poca. Si no tenés, escribí "sin experiencia previa"' },
+      { key: 'disponibilidad',   label: '¿Cuál es tu disponibilidad horaria?',         hint: 'Ej: full time, part time, mañanas, inmediata' },
+    ],
+    promptSistema: `Sos un experto en búsqueda laboral argentino. Escribís cartas de presentación que suenan humanas, directas y genuinas — no corporativas ni genéricas.
+
+Con los datos del usuario, generá una carta de presentación completa:
+- Encabezado con nombre y datos de contacto (deducí que tiene email aunque no se lo hayas preguntado, dejá un placeholder [tu email])
+- Saludo cordial dirigido a la empresa
+- Párrafo 1: por qué le interesa ese puesto/empresa específicamente
+- Párrafo 2: qué puede aportar, sus puntos fuertes concretos
+- Párrafo 3: breve mención de experiencia o formación relevante
+- Cierre: disponibilidad, interés en entrevista, agradecimiento
+- Firma
+
+Tono: profesional pero humano, directo, sin clichés como "soy una persona proactiva y con ganas de crecer". Que suene real.
+Extensión: máximo 3/4 de página.`,
+  },
+
+  {
+    id: 'pagare',
+    nombre: 'Pagaré',
+    icono: '💳',
+    descripcion: 'Compromiso de pago con valor legal',
+    preguntas: [
+      { key: 'deudor_nombre',    label: '¿Quién firma el pagaré? (el que debe)',       hint: 'Nombre completo' },
+      { key: 'deudor_dni',       label: 'DNI del firmante',                            hint: null },
+      { key: 'deudor_domicilio', label: 'Domicilio del firmante',                      hint: null },
+      { key: 'acreedor_nombre',  label: '¿A favor de quién se emite?',                hint: 'Nombre completo de quien cobra' },
+      { key: 'monto',            label: '¿Por qué monto?',                             hint: 'En pesos o dólares, ej: $50.000' },
+      { key: 'vencimiento',      label: '¿Cuándo vence? (fecha de pago)',              hint: 'DD/MM/AAAA' },
+      { key: 'lugar_emision',    label: '¿Dónde se firma el pagaré?',                 hint: 'Ciudad, ej: Buenos Aires' },
+      { key: 'interes',          label: '¿Se aplica interés por mora?',               hint: 'Ej: 5% mensual, o escribí "sin interés"' },
+    ],
+    promptSistema: `Eres un asistente legal argentino. Redactás pagarés según el Decreto-Ley 5965/63 (Régimen Legal de la Letra de Cambio y Pagaré en Argentina).
+Generá el pagaré completo con todos los requisitos legales: denominación "PAGARÉ" visible, promesa incondicional de pago, monto en letras y números, fecha de vencimiento, nombre del beneficiario, lugar de emisión, fecha de emisión, domicilio del firmante, interés punitorio si aplica, y espacio para firma del deudor con aclaración y DNI.
+Formato compacto, de una sola carilla, con todos los datos destacados claramente.
+Al final: "DOCUMENTO GENERADO POR IA — BORRADOR ORIENTATIVO. Para mayor seguridad, certificá la firma ante escribano."`,
+  },
+
+  {
+    id: 'declaracion_jurada',
+    nombre: 'Declaración Jurada',
+    icono: '🔏',
+    descripcion: 'Declarás algo bajo juramento ante quien lo pida',
+    preguntas: [
+      { key: 'declarante_nombre',label: '¿Quién hace la declaración?',                hint: 'Tu nombre completo' },
+      { key: 'declarante_dni',   label: 'Tu DNI',                                     hint: null },
+      { key: 'declarante_dir',   label: 'Tu domicilio',                               hint: null },
+      { key: 'destinatario',     label: '¿A quién va dirigida?',                      hint: 'Ej: Ministerio de Educación, empresa X, banco Y, "a quien corresponda"' },
+      { key: 'objeto',           label: '¿Qué estás declarando?',                     hint: 'Explicalo con tus palabras, ej: que soy soltero, que no tengo deudas, que vivo en tal dirección' },
+      { key: 'finalidad',        label: '¿Para qué trámite o fin la necesitás?',      hint: 'Ej: tramitar una beca, abrir una cuenta, inscribirme en un plan' },
+    ],
+    promptSistema: `Eres un asistente legal argentino. Redactás declaraciones juradas simples para trámites administrativos.
+Generá la declaración completa con: lugar y fecha, identificación del declarante con todos sus datos, cuerpo de la declaración en primera persona con la fórmula "declaro bajo juramento que...", el objeto declarado con claridad, la finalidad, y la fórmula de cierre legal ("siendo fiel expresión de la verdad, firmo la presente").
+Espacio para firma, aclaración y fecha.
+Al final: "DOCUMENTO GENERADO POR IA — BORRADOR ORIENTATIVO."`,
+  },
+
+  {
+    id: 'carta_recomendacion',
+    nombre: 'Carta de Recomendación',
+    icono: '⭐',
+    descripcion: 'Recomendás a alguien para un trabajo o estudio',
+    preguntas: [
+      { key: 'recomendante_nombre', label: '¿Quién escribe la recomendación?',        hint: 'Tu nombre completo' },
+      { key: 'recomendante_cargo',  label: '¿Cuál es tu cargo o rol?',               hint: 'Ej: Gerente de Ventas, Profesor, Director' },
+      { key: 'recomendante_empresa',label: '¿En qué empresa o institución?',          hint: null },
+      { key: 'recomendado_nombre',  label: '¿A quién recomendás?',                   hint: 'Nombre completo de la persona' },
+      { key: 'vinculo',             label: '¿Qué relación tienen?',                  hint: 'Ej: fue mi empleado 2 años, fue mi alumno, trabajamos juntos' },
+      { key: 'periodo',             label: '¿Durante cuánto tiempo lo/la conocés?',  hint: 'Ej: 3 años, desde 2022' },
+      { key: 'cualidades',          label: '¿Qué destacás de esa persona?',          hint: 'Habilidades, actitud, logros concretos' },
+      { key: 'para_que',            label: '¿Para qué la recomendás?',               hint: 'Ej: cualquier puesto laboral, beca universitaria, emprendimiento' },
+    ],
+    promptSistema: `Eres un asistente de recursos humanos argentino. Redactás cartas de recomendación genuinas, cálidas y persuasivas.
+Generá la carta completa con: lugar y fecha, identificación del recomendante y su cargo, relación con el recomendado, descripción concreta de sus cualidades y logros (con ejemplos específicos si los datos lo permiten), recomendación expresa para el fin indicado, ofrecimiento a ampliar información, y firma.
+Tono: humano y auténtico, que no suene a plantilla. Evitá frases vacías. Extensión: media página.
+Al final: "DOCUMENTO GENERADO POR IA — BORRADOR ORIENTATIVO."`,
+  },
+
+  {
+    id: 'contrato_servicios',
+    nombre: 'Contrato de Servicios',
+    icono: '🔧',
+    descripcion: 'Para changas, freelance o trabajo por proyecto',
+    preguntas: [
+      { key: 'prestador_nombre', label: '¿Quién presta el servicio?',                 hint: 'Tu nombre o el del trabajador' },
+      { key: 'prestador_dni',    label: 'DNI del prestador',                          hint: null },
+      { key: 'cliente_nombre',   label: '¿Quién contrata el servicio?',              hint: 'Nombre del cliente o empresa' },
+      { key: 'cliente_dni',      label: 'DNI o CUIT del cliente',                    hint: null },
+      { key: 'servicio',         label: '¿Qué servicio se va a prestar?',            hint: 'Describilo bien, ej: diseño de logo, pintura de departamento, desarrollo web' },
+      { key: 'honorarios',       label: '¿Cuánto se cobra?',                         hint: 'Monto total o por hora/día, en pesos o dólares' },
+      { key: 'forma_pago',       label: '¿Cómo y cuándo se paga?',                  hint: 'Ej: 50% al inicio y 50% al terminar, por transferencia' },
+      { key: 'plazo',            label: '¿En cuánto tiempo se entrega el trabajo?',  hint: 'Ej: 15 días hábiles desde el inicio' },
+      { key: 'incluye',          label: '¿Qué incluye y qué NO incluye el servicio?',hint: 'Ej: incluye 2 revisiones, no incluye hosting' },
+    ],
+    promptSistema: `Eres un asistente legal argentino especializado en trabajo freelance e informal. Redactás contratos de locación de servicios según el Código Civil y Comercial argentino, Arts. 1251-1279.
+Generá el contrato completo con: identificación de las partes, descripción detallada del servicio, alcance (qué incluye y qué no), honorarios y forma de pago, plazos, propiedad intelectual del trabajo entregado, confidencialidad básica, rescisión, y espacio para firmas.
+Lenguaje claro, sin exceso de tecnicismos. Ideal para freelancers y trabajadores independientes.
+Al final: "DOCUMENTO GENERADO POR IA — BORRADOR ORIENTATIVO."`,
+  },
+
+  {
+    id: 'compraventa_vehiculo',
+    nombre: 'Compraventa de Auto/Moto',
+    icono: '🚗',
+    descripcion: 'Vendés o comprás un vehículo entre particulares',
+    preguntas: [
+      { key: 'vendedor_nombre',  label: '¿Quién vende el vehículo?',                 hint: 'Nombre completo del vendedor' },
+      { key: 'vendedor_dni',     label: 'DNI del vendedor',                          hint: null },
+      { key: 'comprador_nombre', label: '¿Quién compra el vehículo?',               hint: 'Nombre completo del comprador' },
+      { key: 'comprador_dni',    label: 'DNI del comprador',                         hint: null },
+      { key: 'vehiculo_tipo',    label: '¿Qué se vende?',                            hint: 'Auto, moto, camioneta, etc.' },
+      { key: 'vehiculo_marca',   label: 'Marca, modelo y año',                       hint: 'Ej: Ford Focus 2018, Honda Wave 2020' },
+      { key: 'dominio',          label: 'Patente / dominio del vehículo',            hint: 'Ej: AB 123 CD' },
+      { key: 'precio',           label: '¿En cuánto se vende?',                      hint: 'En pesos o dólares' },
+      { key: 'forma_pago',       label: '¿Cómo se paga?',                           hint: 'Ej: efectivo en el acto, transferencia, en cuotas' },
+      { key: 'estado',           label: '¿En qué estado se entrega el vehículo?',   hint: 'Ej: en perfecto estado, con detalles de carrocería, con GNC instalado' },
+    ],
+    promptSistema: `Eres un asistente legal argentino. Redactás boletos de compraventa de vehículos usados entre particulares, conforme al Código Civil y Comercial y la normativa del RNPA (Registro Nacional de la Propiedad Automotor).
+Generá el contrato completo con: identificación de las partes, descripción completa del vehículo (tipo, marca, modelo, año, dominio, número de motor y chasis con espacio para completar), precio en letras y números, forma de pago, estado del vehículo, declaración de que está libre de deudas y gravámenes, transferencia de responsabilidad desde la fecha de firma, y espacio para firmas de ambas partes.
+Incluí nota importante sobre la obligación de realizar la transferencia ante el Registro del Automotor.
+Al final: "DOCUMENTO GENERADO POR IA — BORRADOR ORIENTATIVO. La transferencia registral ante el RNPA es obligatoria y debe realizarse dentro de los 30 días."`,
+  },
 ];
 
 /* ═══════════════════════════════════════════
@@ -1304,6 +1490,155 @@ function showPreview() {
 }
 
 /* ═══════════════════════════════════════════
+   PDF ESPECIAL PARA CV
+═══════════════════════════════════════════ */
+function generateCvPdf(pdf, rawText, pageW, pageH) {
+  const C     = PDF_COLORS;
+  const mL    = 0;
+  const mR    = 0;
+  const sideW = 68;   // columna izquierda (sidebar)
+  const mainX = sideW + 8;
+  const mainW = pageW - mainX - 10;
+
+  // ── SIDEBAR fondo verde ──────────────────
+  pdf.setFillColor(...C.verde);
+  pdf.rect(0, 0, sideW, pageH, 'F');
+
+  // ── ÁREA PRINCIPAL fondo blanco ──────────
+  pdf.setFillColor(...C.blanco);
+  pdf.rect(sideW, 0, pageW - sideW, pageH, 'F');
+
+  // Parsear secciones del texto generado
+  const sections = {};
+  let current = 'header';
+  sections.header = [];
+
+  const sectionMap = {
+    '---RESUMEN---':     'resumen',
+    '---EXPERIENCIA---': 'experiencia',
+    '---EDUCACIÓN---':   'educacion',
+    '---HABILIDADES---': 'habilidades',
+    '---EXTRAS---':      'extras',
+  };
+
+  rawText.split('\n').forEach(line => {
+    const trimmed = line.trim();
+    if (sectionMap[trimmed]) {
+      current = sectionMap[trimmed];
+      sections[current] = [];
+    } else {
+      if (!sections[current]) sections[current] = [];
+      sections[current].push(trimmed);
+    }
+  });
+
+  // ── HEADER: nombre y título ──────────────
+  const headerLines = (sections.header || []).filter(l => l);
+  const nombre      = headerLines[0] || 'Tu Nombre';
+  const titulo      = headerLines[1] || '';
+  const contacto    = headerLines.slice(2).join(' ');
+
+  // Nombre grande en sidebar arriba
+  pdf.setFont('helvetica', 'bold');
+  pdf.setFontSize(14);
+  pdf.setTextColor(...C.blanco);
+  const nombreWrapped = pdf.splitTextToSize(nombre.toUpperCase(), sideW - 10);
+  let sy = 20;
+  nombreWrapped.forEach(l => { pdf.text(l, sideW/2, sy, { align: 'center' }); sy += 7; });
+
+  // Título bajo el nombre
+  if (titulo) {
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(8);
+    pdf.setTextColor(183, 222, 200);
+    const titWrapped = pdf.splitTextToSize(titulo, sideW - 10);
+    titWrapped.forEach(l => { pdf.text(l, sideW/2, sy, { align: 'center' }); sy += 5; });
+  }
+
+  // Línea decorativa
+  sy += 4;
+  pdf.setDrawColor(...C.verde_light);
+  pdf.setLineWidth(0.8);
+  pdf.line(10, sy, sideW - 10, sy);
+  sy += 8;
+
+  // Contacto en sidebar
+  function sideSection(label, lines) {
+    if (!lines || !lines.filter(l=>l).length) return;
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(7);
+    pdf.setTextColor(...C.verde_light);
+    pdf.text(label.toUpperCase(), sideW/2, sy, { align: 'center' });
+    sy += 4;
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(7.5);
+    pdf.setTextColor(220, 240, 228);
+    lines.filter(l => l).forEach(l => {
+      const wrapped = pdf.splitTextToSize(l, sideW - 12);
+      wrapped.forEach(wl => { pdf.text(wl, sideW/2, sy, { align: 'center' }); sy += 4.5; });
+    });
+    sy += 5;
+    pdf.setDrawColor(82, 183, 136, 0.3);
+    pdf.setLineWidth(0.3);
+    pdf.line(10, sy - 3, sideW - 10, sy - 3);
+    sy += 2;
+  }
+
+  // Parsear contacto
+  const contactLines = contacto.split('|').map(s => s.trim()).filter(Boolean);
+  sideSection('Contacto', contactLines);
+  sideSection('Habilidades', sections.habilidades);
+  sideSection('Extras', sections.extras);
+
+  // ── ÁREA PRINCIPAL ───────────────────────
+  let my = 18;
+
+  function mainSection(label, lines) {
+    if (!lines || !lines.filter(l=>l).length) return;
+
+    // Título sección
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(9);
+    pdf.setTextColor(...C.verde);
+    pdf.text(label.toUpperCase(), mainX, my);
+    my += 2;
+    pdf.setDrawColor(...C.verde_light);
+    pdf.setLineWidth(0.5);
+    pdf.line(mainX, my, mainX + mainW, my);
+    my += 5;
+
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(9);
+    pdf.setTextColor(...C.tinta_2);
+
+    lines.filter(l => l).forEach(l => {
+      if (my > pageH - 15) return; // no overflow por ahora
+      const isBullet = l.startsWith('•') || l.startsWith('-');
+      const indent   = isBullet ? 3 : 0;
+      const wrapW    = mainW - indent;
+      const wrapped  = pdf.splitTextToSize(l, wrapW);
+      wrapped.forEach(wl => {
+        if (my > pageH - 15) return;
+        pdf.text(wl, mainX + indent, my);
+        my += 5;
+      });
+    });
+    my += 4;
+  }
+
+  mainSection('Resumen profesional', sections.resumen);
+  mainSection('Experiencia', sections.experiencia);
+  mainSection('Educación', sections.educacion);
+
+  // Footer discreto
+  pdf.setFont('helvetica', 'normal');
+  pdf.setFontSize(6);
+  pdf.setTextColor(...C.muted);
+  const fecha = new Date().toLocaleDateString('es-AR');
+  pdf.text(`CV generado con Formulario.ia · ${fecha}`, pageW - 10, pageH - 5, { align: 'right' });
+}
+
+/* ═══════════════════════════════════════════
    GENERAR PDF — DISEÑO PROFESIONAL
 ═══════════════════════════════════════════ */
 
@@ -1437,6 +1772,16 @@ document.getElementById('downloadBtn').addEventListener('click', () => {
   const maxY    = pageH - mBottom;
 
   const docName = state.currentDoc.nombre;
+
+  // ── CV: diseño especial ─────────────────
+  if (state.currentDoc.esCv) {
+    generateCvPdf(pdf, state.generatedDoc, pageW, pageH);
+    const filename = `cv_${new Date().toISOString().slice(0,10)}.pdf`;
+    pdf.save(filename);
+    showToast('✓ CV descargado correctamente');
+    return;
+  }
+
   let y = mTop;
 
   // Primera página: header
